@@ -4,3 +4,9 @@ node_modules
 /index.d.ts
 /index.js
 /index.js.map
+/http-common.d.ts
+/http-common.js
+/http-common.js.map
+/http-endpoint.d.ts
+/http-endpoint.js
+/http-endpoint.js.map
