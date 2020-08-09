@@ -78,8 +78,7 @@ export interface HttpClientResponseResult<
  */
 export interface HttpClientResponseUnknownResult<
   P extends Dictionary = {},
-  R = void,
-  C = R,
+  C = void,
 > extends HttpClientResponseResult<P, C> {
   /** the type of raw content */
   readonly type: 'UNKNOWN';
@@ -92,8 +91,7 @@ export interface HttpClientResponseUnknownResult<
  */
 export interface HttpClientResponseJsonResult<
   P extends Dictionary = {},
-  R = void,
-  C = R,
+  C = void,
 > extends HttpClientResponseResult<P, C> {
   /** the type of raw content */
   readonly type: 'JSON';
@@ -106,8 +104,7 @@ export interface HttpClientResponseJsonResult<
  */
 export interface HttpClientResponseXmlResult<
   P extends Dictionary = {},
-  R = void,
-  C = R,
+  C = void,
 > extends HttpClientResponseResult<P, C> {
   /** the type of raw content */
   readonly type: 'XML';
@@ -120,8 +117,7 @@ export interface HttpClientResponseXmlResult<
  */
 export interface HttpClientResponseTextResult<
   P extends Dictionary = {},
-  R = void,
-  C = R,
+  C = void,
 > extends HttpClientResponseResult<P, C> {
   /** the type of raw content */
   readonly type: 'TEXT';
