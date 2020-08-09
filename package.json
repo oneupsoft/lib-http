@@ -1,0 +1,43 @@
+{
+  "name": "@oneup/lib-http",
+  "version": "1.0.0-prealpha.0",
+  "description": "A library to make HTTP calls",
+  "main": "index.js",
+  "files": [
+    "/src/",
+    "/index.d.ts",
+    "/index.js",
+    "/index.js.map"
+  ],
+  "scripts": {
+    "republish": "npm unpublish --force @oneup/lib-http && npm publish",
+    "test": "jest",
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "prepare": "npm run build"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/oneupsoft/lib-http.git"
+  },
+  "keywords": [
+    "http"
+  ],
+  "author": {
+    "name": "Leon Plata",
+    "email": "pcg.leon@outlook.com"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/oneupsoft/lib-http/issues"
+  },
+  "homepage": "https://github.com/oneupsoft/lib-http#readme",
+  "devDependencies": {
+    "@types/jest": "^26.0.9",
+    "jest": "^26.2.2",
+    "jest-fetch-mock": "^3.0.3",
+    "ts-jest": "^26.1.4",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {}
+}
