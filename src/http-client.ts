@@ -38,7 +38,7 @@ export interface HttpClientSettingsWithBody<
 /**
  * Settings to be passed into the HttpClient constructor.
  */
-export interface HttpClientGeneralSettings<
+export interface HttpClientConstructorSettings<
   P extends Dictionary = {},
   Q extends Dictionary = {},
 > extends HttpClientSettings<P, Q> {
@@ -70,7 +70,7 @@ export interface HttpClientResponseResult<
   /**  The HTTP method. */
   readonly method: string;
   /** The endpoint used to fetch. */
-  readonly endpointFn?: HttpEndpointFunction<P>;
+  readonly endpointFn: HttpEndpointFunction<P>;
 }
 
 /**
@@ -275,7 +275,7 @@ export class HttpClient<
    */
   static create<
     P extends Dictionary = {},
-  >(settings: HttpClientGeneralSettings<P>): HttpClient<P> {
+  >(settings: HttpClientConstructorSettings<P>): HttpClient<P> {
     return new HttpClient(settings);
   }
 
@@ -297,7 +297,7 @@ export class HttpClient<
     credentials = 'same-origin',
     signal,
     contentInterceptorFn,
-  }: HttpClientGeneralSettings<P, Q>) {
+  }: HttpClientConstructorSettings<P, Q>) {
     this.#serviceUrl = serviceUrl;
     this.#endpointFn = endpointFn;
     this.#params = params;
@@ -589,7 +589,7 @@ export class HttpClient<
 
     // Building response result.
     const result: HttpClientResponseAnyResult<P> = {
-      ...await parseResponseContent<P>(requestInit, response),
+      ...await parseResponseContent<P>(requestInit, response, this.#endpointFn),
       endpointFn: this.#endpointFn,
     };
     if (!response.ok) {
@@ -731,7 +731,7 @@ function isTextContentType(contentType: string | null = ''): boolean {
  */
 async function parseResponseContent<
   P extends Dictionary,
->(requestInit: RequestInit, response: Response): Promise<HttpClientResponseAnyResult<P>> {
+>(requestInit: RequestInit, response: Response, endpointFn: HttpEndpointFunction<P>): Promise<HttpClientResponseAnyResult<P>> {
   const status = response.status;
   const mimeType = response.headers.get('content-type') || 'text/plain';
   let type: 'JSON'|'XML'|'TEXT'|'BLOB';
@@ -759,6 +759,7 @@ async function parseResponseContent<
     response,
     status,
     mimeType,
+    endpointFn,
   }
 }
 
