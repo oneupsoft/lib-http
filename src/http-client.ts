@@ -7,15 +7,6 @@ import { Dictionary } from './http-common';
 import { HttpEndpointFunction } from './http-endpoint';
 
 /**
- * The type of the response.
- */
-export enum HttpClientResponseResultType {
-  XML,
-  JSON,
-  TEXT,
-}
-
-/**
  * Settings to be passed into the HttpClient fetch calls.
  */
 export interface HttpClientSettings<
@@ -66,13 +57,10 @@ export interface HttpClientGeneralSettings<
  */
 export interface HttpClientResponseResult<
   P extends Dictionary = {},
-  R = void,
-  C = R,
+  C = void,
 > {
   /**  A response from the Fetch API. */
   readonly response: Response;
-  /**  The parsed content before interception. */
-  readonly rawContent: R;
   /**  The parsed content after interception. */
   readonly content: C;
   /**  The HTTP status code. */
@@ -86,13 +74,93 @@ export interface HttpClientResponseResult<
 }
 
 /**
+ * 
+ */
+export interface HttpClientResponseUnknownResult<
+  P extends Dictionary = {},
+  R = void,
+  C = R,
+> extends HttpClientResponseResult<P, C> {
+  /** the type of raw content */
+  readonly type: 'UNKNOWN';
+  /**  The parsed content before interception. */
+  readonly rawContent: any;
+}
+
+/**
+ * 
+ */
+export interface HttpClientResponseJsonResult<
+  P extends Dictionary = {},
+  R = void,
+  C = R,
+> extends HttpClientResponseResult<P, C> {
+  /** the type of raw content */
+  readonly type: 'JSON';
+  /**  The parsed content before interception. */
+  readonly rawContent: object;
+}
+
+/**
+ * 
+ */
+export interface HttpClientResponseXmlResult<
+  P extends Dictionary = {},
+  R = void,
+  C = R,
+> extends HttpClientResponseResult<P, C> {
+  /** the type of raw content */
+  readonly type: 'XML';
+  /**  The parsed content before interception. */
+  readonly rawContent: Document;
+}
+
+/**
+ * 
+ */
+export interface HttpClientResponseTextResult<
+  P extends Dictionary = {},
+  R = void,
+  C = R,
+> extends HttpClientResponseResult<P, C> {
+  /** the type of raw content */
+  readonly type: 'TEXT';
+  /**  The parsed content before interception. */
+  readonly rawContent: string;
+}
+
+/**
+ * 
+ */
+export interface HttpClientResponseBlobResult<
+  P extends Dictionary = {},
+  C = void,
+> extends HttpClientResponseResult<P, C> {
+  /** the type of raw content */
+  readonly type: 'BLOB';
+  /**  The parsed content before interception. */
+  readonly rawContent: Blob;
+}
+
+/**
+ * 
+ */
+export type HttpClientResponseAnyResult<
+P extends Dictionary = {},
+C = void,
+> = HttpClientResponseUnknownResult<P, C>
+  | HttpClientResponseJsonResult<P, C>
+  | HttpClientResponseXmlResult<P, C>
+  | HttpClientResponseTextResult<P, C>
+  | HttpClientResponseBlobResult<P, C>;
+
+/**
  * An abstract error from an HttpClient failed response.
  */
 export abstract class AbstractHttpClientResponseError<
   P extends Dictionary = {},
-  R = void,
-  C = R,
-> extends Error implements HttpClientResponseResult<P, R, C> {
+  C = void,
+> extends Error implements HttpClientResponseResult<P, C> {
   /**  A response from the Fetch API. */
   readonly response: Response;
   /**  The parsed content before interception. */
@@ -115,7 +183,7 @@ export abstract class AbstractHttpClientResponseError<
    * @param result
    * An HttpClient response result.
    */
-  constructor(message: string, result: HttpClientResponseResult<P, R, C>) {
+  constructor(message: string, result: HttpClientResponseResult<P, C>) {
     super(message);
     Object.assign(this, result, { name: 'HttpUnsuccessResponseError' });
   }
@@ -126,16 +194,15 @@ export abstract class AbstractHttpClientResponseError<
  */
 export class HttpClientResponseError<
   P extends Dictionary = {},
-  R = void,
-  C = R,
-> extends AbstractHttpClientResponseError<P, R, C> {
+  C = void,
+> extends AbstractHttpClientResponseError<P, C> {
 
   /**
    * Creates an error for unsuccess responses.
    * @param result
    * An HttpClient response result.
    */
-  constructor(result: HttpClientResponseResult<P, R, C>) {
+  constructor(result: HttpClientResponseResult<P, C>) {
     super(`Request to "${result.response.url}" failed`, result);
   }
 }
@@ -145,9 +212,8 @@ export class HttpClientResponseError<
  */
 export class HttpContentInterceptionError<
   P extends Dictionary = {},
-  R = void,
-  C = R,
-> extends AbstractHttpClientResponseError<P, R, C> {
+  C = void,
+> extends AbstractHttpClientResponseError<P, C> {
 
   /** The error that caused the interception exception. */
   readonly innerError: Error;
@@ -157,7 +223,7 @@ export class HttpContentInterceptionError<
    * @param result
    * An HttpClient response result.
    */
-  constructor(result: HttpClientResponseResult<P, R, C>, innerError: Error) {
+  constructor(result: HttpClientResponseResult<P, C>, innerError: Error) {
     super(`Http response content interception failed with error: ${innerError.name}`, result);
     this.innerError = innerError;
   }
@@ -504,7 +570,7 @@ export class HttpClient<
     headers = {},
     body,
     signal,
-  }: HttpClientSettingsWithBody<Partial<P>, QE, BE>): Promise<HttpClientResponseResult> {
+  }: HttpClientSettingsWithBody<Partial<P>, QE, BE>): Promise<HttpClientResponseResult<P>> {
 
     // Building request settings.
     const allHeaders = createHeaders({ ...this.#headers, ...headers });
@@ -522,15 +588,15 @@ export class HttpClient<
     const response = await fetch(url, requestInit);
 
     // Building response result.
-    const result: HttpClientResponseResult = {
-      ...await parseResponseContent(requestInit, response),
+    const result: HttpClientResponseAnyResult<P> = {
+      ...await parseResponseContent<P>(requestInit, response),
       endpointFn: this.#endpointFn,
     };
     if (!response.ok) {
       throw new HttpClientResponseError(result);
     }
     if (this.#contentInterceptorFn) {
-      return transformResultContent(result, this.#contentInterceptorFn);
+      return transformResultContent<P>(result, this.#contentInterceptorFn);
     }
     return result;
   }
@@ -569,7 +635,7 @@ export class HttpClient<
    * 
    * @param settings
    * Settings to override the general settings.
-   * @returns {Promise<HttpClientResponseResult>} 
+   * @returns
    * A response object with the parsed content.
    */
   put<
@@ -584,7 +650,7 @@ export class HttpClient<
    * 
    * @param settings
    * Settings to override the general settings.
-   * @returns {Promise<HttpClientResponseResult>} 
+   * @returns
    * A response object with the parsed content.
    */
   del<
@@ -663,26 +729,34 @@ function isTextContentType(contentType: string | null = ''): boolean {
  * @returns
  * The parsed response.
  */
-async function parseResponseContent(requestInit: RequestInit, response: Response): Promise<HttpClientResponseResult> {
+async function parseResponseContent<
+  P extends Dictionary,
+>(requestInit: RequestInit, response: Response): Promise<HttpClientResponseAnyResult<P>> {
   const status = response.status;
   const mimeType = response.headers.get('content-type') || 'text/plain';
-  let content;
+  let type: 'JSON'|'XML'|'TEXT'|'BLOB';
+  let rawContent;
   if (isJsonContentType(mimeType)) {
-    content = await response.json();
+    rawContent = await response.json();
+    type = 'JSON';
   } else if (isXmlContentType(mimeType)) {
     const parser = new DOMParser();
-    content = await response.text();
-    content = parser.parseFromString(content, 'text/xml');
+    rawContent = await response.text();
+    rawContent = parser.parseFromString(rawContent, 'text/xml');
+    type = 'XML';
   } else if (isTextContentType(mimeType)) {
-    content = await response.text();
+    rawContent = await response.text();
+    type = 'TEXT';
   } else  {
-    content = await response.blob();
+    rawContent = await response.blob();
+    type = 'BLOB';
   }
   return {
+    type,
     method: requestInit.method || 'GET',
-    rawContent: content,
+    rawContent,
+    content: rawContent,
     response,
-    content,
     status,
     mimeType,
   }
@@ -699,7 +773,9 @@ async function parseResponseContent(requestInit: RequestInit, response: Response
  * A transformed result.
  * @private
  */
-function transformResultContent(result: HttpClientResponseResult, contentInterceptorFn: Function): HttpClientResponseResult {
+function transformResultContent<
+  P extends Dictionary,
+>(result: HttpClientResponseResult<P>, contentInterceptorFn: Function): HttpClientResponseResult<P> {
   try {
     return {
       ...result,
