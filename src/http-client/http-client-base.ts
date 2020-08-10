@@ -7,7 +7,7 @@ import {
   HttpClientConstructorSettings,
   HttpClientSetupFunction,
   HttpClientResponseResult,
-  HttpClientResponseAnyResult,
+  HttpClientResponseRawResult,
   HttpClientResponseError,
   HttpContentInterceptionError,
   BYPASS_HTTP_CONTENT_INTERCEPTION_ERROR,
@@ -325,7 +325,7 @@ export class HttpClientBase<
     headers = {},
     body,
     signal,
-  }: HttpClientSettingsWithBody<Partial<PE>, QE, BE>): Promise<HttpClientResponseAnyResult<C, PE>> {
+  }: HttpClientSettingsWithBody<Partial<PE>, QE, BE>): Promise<HttpClientResponseRawResult<C, PE>> {
 
     // Building request settings.
     const allHeaders = createHeaders({ ...this.#headers, ...headers });
@@ -343,7 +343,7 @@ export class HttpClientBase<
     const response = await fetch(url, requestInit);
 
     // Building response result.
-    const result: HttpClientResponseAnyResult<C, P> = {
+    const result: HttpClientResponseRawResult<C, P> = {
       ...await parseResponseContent<C, P>(requestInit, response, this.#endpointFn),
       endpointFn: this.#endpointFn,
     };
@@ -365,7 +365,7 @@ export class HttpClientBase<
     C,
     PE extends P,
     QE extends Q,
-  >(settings: HttpClientSettings<PE, QE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+  >(settings: HttpClientSettings<PE, QE> = {}): Promise<HttpClientResponseRawResult<C, PE>> {
     return this.fetch('GET', settings);
   }
 
@@ -382,7 +382,7 @@ export class HttpClientBase<
     PE extends P,
     QE extends Q,
     BE extends B,
-  >(settings: HttpClientSettingsWithBody<PE, QE, BE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+  >(settings: HttpClientSettingsWithBody<PE, QE, BE> = {}): Promise<HttpClientResponseRawResult<C, PE>> {
     return this.fetch('POST', settings);
   }
 
@@ -399,7 +399,7 @@ export class HttpClientBase<
     PE extends P,
     QE extends Q,
     BE extends B,
-  >(settings: HttpClientSettingsWithBody<PE, QE, BE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+  >(settings: HttpClientSettingsWithBody<PE, QE, BE> = {}): Promise<HttpClientResponseRawResult<C, PE>> {
     return this.fetch('PUT', settings);
   }
 
@@ -415,7 +415,7 @@ export class HttpClientBase<
     C,
     PE extends P,
     QE extends Q,
-  >(settings: HttpClientSettings<PE, QE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+  >(settings: HttpClientSettings<PE, QE> = {}): Promise<HttpClientResponseRawResult<C, PE>> {
     return this.fetch('DELETE', settings);
   }
 }
@@ -492,7 +492,7 @@ function isTextContentType(contentType: string | null = ''): boolean {
 async function parseResponseContent<
   C = void,
   P extends Dictionary = {},
->(requestInit: RequestInit, response: Response, endpointFn: HttpEndpointFunction<P>): Promise<HttpClientResponseAnyResult<C, P>> {
+>(requestInit: RequestInit, response: Response, endpointFn: HttpEndpointFunction<P>): Promise<HttpClientResponseRawResult<C, P>> {
   const status = response.status;
   const mimeType = response.headers.get('content-type') || 'text/plain';
   let type: 'JSON'|'XML'|'TEXT'|'BLOB';

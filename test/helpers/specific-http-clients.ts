@@ -21,21 +21,49 @@ interface GroupUsersPayload {
   limit: number;
 }
 
+const content: GroupUsersPayload = {
+  users: [{
+    id: 1,
+    name: 'John Doe',
+  }],
+  skip: 1,
+  limit: 1,
+};
+
 export class GroupUsersHttpClient extends HTTP.HttpClientDecorator {
 
-  get<GroupUsersPayload>(settings: HTTP.HttpClientSettings<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
+  async get<GroupUsersPayload>(settings: HTTP.HttpClientSettings<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
+    const result = await this.base.get(settings);
+    if (result.type === 'JSON') {
+      const WTF: GroupUsersPayload = {
+        users: [{
+          id: 1,
+          name: 'John Doe',
+        }],
+        skip: 1,
+        limit: 1,
+      };
+      return {
+        endpointFn: result.endpointFn,
+        method: result.method,
+        mimeType: result.mimeType,
+        response: result.response,
+        status: result.status,
+        content: null,
+      };
+    }
+    throw new Error('Can\'t parse result');
+  }
+
+  async post<GroupUsersPayload>(settings: HTTP.HttpClientSettingsWithBody<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
     return this.base.get(settings);
   }
 
-  post<GroupUsersPayload>(settings: HTTP.HttpClientSettingsWithBody<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
+  async put<GroupUsersPayload>(settings: HTTP.HttpClientSettingsWithBody<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
     return this.base.get(settings);
   }
 
-  put<GroupUsersPayload>(settings: HTTP.HttpClientSettingsWithBody<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
-    return this.base.get(settings);
-  }
-
-  del<GroupUsersPayload>(settings: HTTP.HttpClientSettings<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
+  async del<GroupUsersPayload>(settings: HTTP.HttpClientSettings<GroupUsersParams, GroupUsersQuery>): Promise<HTTP.HttpClientResponseResult<GroupUsersPayload, GroupUsersParams>> {
     return this.base.get(settings);
   }
 }

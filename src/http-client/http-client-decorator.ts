@@ -1,5 +1,6 @@
 import { Dictionary } from '../http-common';
 import { HttpEndpointFunction } from '../http-endpoint';
+import { HttpClientBase } from './http-client-base';
 import {
   HttpClient,
   HttpClientSettings,
@@ -15,7 +16,7 @@ export abstract class HttpClientDecorator<
 > implements HttpClient<P, Q, B> {
 
   /** The http client instance being decorated */
-  protected base: HttpClient<P, Q, B>;
+  protected base: HttpClientBase<P, Q, B>;
 
   /**
    * Creates a new instance with the same settings.
@@ -23,7 +24,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * A new instance with the same settings.
    */
-  clone(): HttpClient<P> {
+  clone(): HttpClient<P, Q, B> {
     return this.base.clone();
   }
 
@@ -35,7 +36,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setup(setupFn: HttpClientSetupFunction<P>): HttpClient<P> {
+  setup(setupFn: HttpClientSetupFunction<P>): HttpClient<P, Q, B> {
     return this.base.setup(setupFn);
   }
 
@@ -47,7 +48,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setServiceUrl(serviceUrl: string): HttpClient<P> {
+  setServiceUrl(serviceUrl: string): HttpClient<P, Q, B> {
     return this.base.setServiceUrl(serviceUrl);
   }
   
@@ -59,7 +60,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setEndpoint(endpointFn: HttpEndpointFunction<P>): HttpClient<P> {
+  setEndpoint(endpointFn: HttpEndpointFunction<P>): HttpClient<P, Q, B> {
     return this.base.setEndpoint(endpointFn);
   }
 
@@ -71,7 +72,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setAuthorization(authorization: string): HttpClient<P> {
+  setAuthorization(authorization: string): HttpClient<P, Q, B> {
     return this.base.setAuthorization(authorization);
   }
 
@@ -83,7 +84,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setBasicAuth(token: string): HttpClient<P> {
+  setBasicAuth(token: string): HttpClient<P, Q, B> {
     return this.base.setBasicAuth(token);
   }
 
@@ -95,7 +96,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setBearerAuth(token: string): HttpClient<P> {
+  setBearerAuth(token: string): HttpClient<P, Q, B> {
     return this.base.setBearerAuth(token);
   }
 
@@ -109,7 +110,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setBasicAuthCredentials(username: string, password: string): HttpClient<P> {
+  setBasicAuthCredentials(username: string, password: string): HttpClient<P, Q, B> {
     return this.base.setBasicAuthCredentials(username, password);
   }
 
@@ -124,7 +125,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setParams(params: P, replace: boolean): HttpClient<P> {
+  setParams(params: P, replace: boolean): HttpClient<P, Q, B> {
     return this.base.setParams(params, replace);
   }
 
@@ -140,7 +141,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setQuery(query: Q, replace: boolean): HttpClient<P> {
+  setQuery(query: Q, replace: boolean): HttpClient<P, Q, B> {
     return this.base.setQuery(query, replace);
   }
 
@@ -154,7 +155,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setHeaders(headers: Dictionary, replace: boolean): HttpClient<P> {
+  setHeaders(headers: Dictionary, replace: boolean): HttpClient<P, Q, B> {
     return this.base.setHeaders(headers, replace);
   }
 
@@ -166,7 +167,7 @@ export abstract class HttpClientDecorator<
    * @returns
    * This instance.
    */
-  setSignal(signal: AbortSignal): HttpClient<P> {
+  setSignal(signal: AbortSignal): HttpClient<P, Q, B> {
     return this.base.setSignal(signal);
   }
 

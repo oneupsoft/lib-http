@@ -71,7 +71,7 @@ export interface HttpClientResponseResult<
 /**
  * 
  */
-export interface HttpClientResponseUnknownResult<
+export interface HttpClientResponseUnknownRawResult<
   C = void,
   P extends Dictionary = {},
 > extends HttpClientResponseResult<C, P> {
@@ -84,7 +84,7 @@ export interface HttpClientResponseUnknownResult<
 /**
  * 
  */
-export interface HttpClientResponseJsonResult<
+export interface HttpClientResponseJsonRawResult<
   C = void,
   P extends Dictionary = {},
 > extends HttpClientResponseResult<C, P> {
@@ -97,7 +97,7 @@ export interface HttpClientResponseJsonResult<
 /**
  * 
  */
-export interface HttpClientResponseXmlResult<
+export interface HttpClientResponseXmlRawResult<
   C = void,
   P extends Dictionary = {},
 > extends HttpClientResponseResult<C, P> {
@@ -110,7 +110,7 @@ export interface HttpClientResponseXmlResult<
 /**
  * 
  */
-export interface HttpClientResponseTextResult<
+export interface HttpClientResponseTextRawResult<
   C = void,
   P extends Dictionary = {},
 > extends HttpClientResponseResult<C, P> {
@@ -123,7 +123,7 @@ export interface HttpClientResponseTextResult<
 /**
  * 
  */
-export interface HttpClientResponseBlobResult<
+export interface HttpClientResponseBlobRawResult<
   C = void,
   P extends Dictionary = {},
 > extends HttpClientResponseResult<C, P> {
@@ -136,14 +136,14 @@ export interface HttpClientResponseBlobResult<
 /**
  * 
  */
-export type HttpClientResponseAnyResult<
+export type HttpClientResponseRawResult<
   C = void,
   P extends Dictionary = {},
-> = HttpClientResponseUnknownResult<C, P>
-  | HttpClientResponseJsonResult<C, P>
-  | HttpClientResponseXmlResult<C, P>
-  | HttpClientResponseTextResult<C, P>
-  | HttpClientResponseBlobResult<C, P>;
+> = HttpClientResponseUnknownRawResult<C, P>
+  | HttpClientResponseJsonRawResult<C, P>
+  | HttpClientResponseXmlRawResult<C, P>
+  | HttpClientResponseTextRawResult<C, P>
+  | HttpClientResponseBlobRawResult<C, P>;
 
 /**
  * An abstract error from an HttpClient failed response.
