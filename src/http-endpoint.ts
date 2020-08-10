@@ -1,8 +1,3 @@
-/**
- * @module http-client
- * @author Leon Plata <pcg.leon@outlook.net>
- */
-
 import { Dictionary } from './http-common';
 
 /**

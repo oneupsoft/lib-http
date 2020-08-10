@@ -1,248 +1,26 @@
-/**
- * @module http-client
- * @author Leon Plata <pcg.leon@outlook.net>
- */
-
-import { Dictionary } from './http-common';
-import { HttpEndpointFunction } from './http-endpoint';
-
-/**
- * Settings to be passed into the HttpClient fetch calls.
- */
-export interface HttpClientSettings<
-  P extends Dictionary = {},
-  Q extends Dictionary = {},
-> {
-  /** An object to be parsed into URL params. */
-  params?: Partial<P>;
-  /** An object to be parsed into a query string. */
-  query?: Partial<Q>;
-  /** An object to be assigned into HTTP headers. */
-  headers?: Dictionary;
-  /** An abort signal. */
-  signal?: AbortSignal;
-}
-
-/**
- * Settings to be passed into the HttpClient fetch calls.
- */
-export interface HttpClientSettingsWithBody<
-  P extends Dictionary = {},
-  Q extends Dictionary = {},
-  B extends object | void = void,
-> extends HttpClientSettings<P, Q> {
-  /** An object tobe ussed as HTTP request body. */
-  body?: B;
-}
-
-/**
- * Settings to be passed into the HttpClient constructor.
- */
-export interface HttpClientConstructorSettings<
-  P extends Dictionary = {},
-  Q extends Dictionary = {},
-> extends HttpClientSettings<P, Q> {
-  /** An url that will be used as the base url on all requests. */
-  serviceUrl: string;
-  /** A function that accepts parameters and returns an string as endpoint. */
-  endpointFn: HttpEndpointFunction<P>;
-  /** Fetch API credentials: omit, same-origin, include. */
-  credentials?: RequestCredentials;
-  /** A function to intercept the response content. */
-  contentInterceptorFn?: Function;
-}
-
-/**
- * A result from an HttpClient successful response.
- */
-export interface HttpClientResponseResult<
-  P extends Dictionary = {},
-  C = void,
-> {
-  /**  A response from the Fetch API. */
-  readonly response: Response;
-  /**  The parsed content after interception. */
-  readonly content: C;
-  /**  The HTTP status code. */
-  readonly status: number;
-  /**  The MIME type of the content. */
-  readonly mimeType: string;
-  /**  The HTTP method. */
-  readonly method: string;
-  /** The endpoint used to fetch. */
-  readonly endpointFn: HttpEndpointFunction<P>;
-}
-
-/**
- * 
- */
-export interface HttpClientResponseUnknownResult<
-  P extends Dictionary = {},
-  C = void,
-> extends HttpClientResponseResult<P, C> {
-  /** the type of raw content */
-  readonly type: 'UNKNOWN';
-  /**  The parsed content before interception. */
-  readonly rawContent: any;
-}
-
-/**
- * 
- */
-export interface HttpClientResponseJsonResult<
-  P extends Dictionary = {},
-  C = void,
-> extends HttpClientResponseResult<P, C> {
-  /** the type of raw content */
-  readonly type: 'JSON';
-  /**  The parsed content before interception. */
-  readonly rawContent: object;
-}
-
-/**
- * 
- */
-export interface HttpClientResponseXmlResult<
-  P extends Dictionary = {},
-  C = void,
-> extends HttpClientResponseResult<P, C> {
-  /** the type of raw content */
-  readonly type: 'XML';
-  /**  The parsed content before interception. */
-  readonly rawContent: Document;
-}
-
-/**
- * 
- */
-export interface HttpClientResponseTextResult<
-  P extends Dictionary = {},
-  C = void,
-> extends HttpClientResponseResult<P, C> {
-  /** the type of raw content */
-  readonly type: 'TEXT';
-  /**  The parsed content before interception. */
-  readonly rawContent: string;
-}
-
-/**
- * 
- */
-export interface HttpClientResponseBlobResult<
-  P extends Dictionary = {},
-  C = void,
-> extends HttpClientResponseResult<P, C> {
-  /** the type of raw content */
-  readonly type: 'BLOB';
-  /**  The parsed content before interception. */
-  readonly rawContent: Blob;
-}
-
-/**
- * 
- */
-export type HttpClientResponseAnyResult<
-P extends Dictionary = {},
-C = void,
-> = HttpClientResponseUnknownResult<P, C>
-  | HttpClientResponseJsonResult<P, C>
-  | HttpClientResponseXmlResult<P, C>
-  | HttpClientResponseTextResult<P, C>
-  | HttpClientResponseBlobResult<P, C>;
-
-/**
- * An abstract error from an HttpClient failed response.
- */
-export abstract class AbstractHttpClientResponseError<
-  P extends Dictionary = {},
-  C = void,
-> extends Error implements HttpClientResponseResult<P, C> {
-  /**  A response from the Fetch API. */
-  readonly response: Response;
-  /**  The parsed content before interception. */
-  readonly rawContent: any;
-  /**  The parsed content after interception. */
-  readonly content: any;
-  /**  The HTTP status code. */
-  readonly status: number;
-  /**  The MIME type of the content. */
-  readonly mimeType: string;
-  /**  The HTTP method. */
-  readonly method: string;
-  /** The endpoint used to fetch. */
-  readonly endpointFn: HttpEndpointFunction<P>;
-
-  /**
-   * Creates an error for unsuccess responses.
-   * @param message
-   * The message to be displayed.
-   * @param result
-   * An HttpClient response result.
-   */
-  constructor(message: string, result: HttpClientResponseResult<P, C>) {
-    super(message);
-    Object.assign(this, result, { name: 'HttpUnsuccessResponseError' });
-  }
-}
-
-/**
- * An error from an HttpClient failed response.
- */
-export class HttpClientResponseError<
-  P extends Dictionary = {},
-  C = void,
-> extends AbstractHttpClientResponseError<P, C> {
-
-  /**
-   * Creates an error for unsuccess responses.
-   * @param result
-   * An HttpClient response result.
-   */
-  constructor(result: HttpClientResponseResult<P, C>) {
-    super(`Request to "${result.response.url}" failed`, result);
-  }
-}
-
-/**
- * An error from an HttpClient failed interception.
- */
-export class HttpContentInterceptionError<
-  P extends Dictionary = {},
-  C = void,
-> extends AbstractHttpClientResponseError<P, C> {
-
-  /** The error that caused the interception exception. */
-  readonly innerError: Error;
-
-  /**
-   * Creates an error for unsuccess content interception.
-   * @param result
-   * An HttpClient response result.
-   */
-  constructor(result: HttpClientResponseResult<P, C>, innerError: Error) {
-    super(`Http response content interception failed with error: ${innerError.name}`, result);
-    this.innerError = innerError;
-  }
-}
-
-/**
- * A function to manipulate an HttpClient instance.
- */
-export type HttpClientSetupFunction<P extends Dictionary = {}> = (client: HttpClient<P>) => void;
-
-/**
- * A symbol to identify HTTP content interception bypassing.
- */
-export const BYPASS_HTTP_CONTENT_INTERCEPTION_ERROR: Symbol = Symbol('BYPASS_HTTP_CONTENT_INTERCEPTION_ERROR');
+import { Dictionary } from '../http-common';
+import { HttpEndpointFunction } from '../http-endpoint';
+import {
+  HttpClient,
+  HttpClientSettings,
+  HttpClientSettingsWithBody,
+  HttpClientConstructorSettings,
+  HttpClientSetupFunction,
+  HttpClientResponseResult,
+  HttpClientResponseAnyResult,
+  HttpClientResponseError,
+  HttpContentInterceptionError,
+  BYPASS_HTTP_CONTENT_INTERCEPTION_ERROR,
+} from './http-client';
 
 /**
  * An HTTP client class, it allows to pre-configure HTTP requests.
  */
-export class HttpClient<
+export class HttpClientBase<
   P extends Dictionary = {},
   Q extends Dictionary = {},
   B extends object | void = void,
-> {
+> implements HttpClient<P, Q, B> {
 
   /** An url that will be used as the base url on all requests. */
   #serviceUrl: string;
@@ -258,8 +36,6 @@ export class HttpClient<
   #signal?: AbortSignal;
   /** Fetch API credentials: omit, same-origin, include.  */
   #credentials?: RequestCredentials;
-  /** A function to intercept the response content. */
-  #contentInterceptorFn?: Function;
 
   /**
    * A creator function to be used on call chains.
@@ -272,7 +48,7 @@ export class HttpClient<
   static create<
     P extends Dictionary = {},
   >(settings: HttpClientConstructorSettings<P>): HttpClient<P> {
-    return new HttpClient(settings);
+    return new HttpClientBase(settings);
   }
 
   /**
@@ -292,7 +68,6 @@ export class HttpClient<
     },
     credentials = 'same-origin',
     signal,
-    contentInterceptorFn,
   }: HttpClientConstructorSettings<P, Q>) {
     this.#serviceUrl = serviceUrl;
     this.#endpointFn = endpointFn;
@@ -301,7 +76,6 @@ export class HttpClient<
     this.#headers = headers;
     this.#credentials = credentials;
     this.#signal = signal;
-    this.#contentInterceptorFn = contentInterceptorFn
   }
 
   /**
@@ -310,8 +84,8 @@ export class HttpClient<
    * @returns
    * A new instance with the same settings.
    */
-  clone(): HttpClient<P> {
-    return new HttpClient({
+  clone(): HttpClient<P, Q, B> {
+    return new HttpClientBase({
       serviceUrl: this.#serviceUrl,
       endpointFn: this.#endpointFn,
       params: { ...this.#params },
@@ -330,7 +104,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setup(setupFn: HttpClientSetupFunction<P>): HttpClient<P> {
+  setup(setupFn: HttpClientSetupFunction<P, Q, B>): HttpClient<P, Q, B> {
     setupFn(this);
     return this;
   }
@@ -343,7 +117,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setServiceUrl(serviceUrl: string): HttpClient<P> {
+  setServiceUrl(serviceUrl: string): HttpClient<P, Q, B> {
     if (serviceUrl == null) {
       throw new Error('Missing service URL');
     }
@@ -359,7 +133,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setEndpoint(endpointFn: HttpEndpointFunction<P>): HttpClient<P> {
+  setEndpoint(endpointFn: HttpEndpointFunction<P>): HttpClient<P, Q, B> {
     if (endpointFn == null || !(endpointFn instanceof Function)) {
       throw new Error('Invalid endpoint');
     }
@@ -375,7 +149,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setAuthorization(authorization: string): HttpClient<P> {
+  setAuthorization(authorization: string): HttpClient<P, Q, B> {
     if (authorization == null) {
       throw new Error('Missing authorization');
     }
@@ -391,7 +165,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setBasicAuth(token: string): HttpClient<P> {
+  setBasicAuth(token: string): HttpClient<P, Q, B> {
     if (token == null) {
       throw new Error('Missing basic authorization');
     }
@@ -406,7 +180,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setBearerAuth(token: string): HttpClient<P> {
+  setBearerAuth(token: string): HttpClient<P, Q, B> {
     if (token == null) {
       throw new Error('Missing bearer authorization');
     }
@@ -423,7 +197,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setBasicAuthCredentials(username: string, password: string): HttpClient<P> {
+  setBasicAuthCredentials(username: string, password: string): HttpClient<P, Q, B> {
     if (username == null || password == null) {
       throw new Error('Missing username or password');
     }
@@ -441,7 +215,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setParams(params: P, replace = false): HttpClient<P> {
+  setParams(params: P, replace = false): HttpClient<P, Q, B> {
     if (replace) {
       this.#params = params;
     } else {
@@ -463,7 +237,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setQuery(query: Q, replace: boolean = false): HttpClient<P> {
+  setQuery(query: Q, replace: boolean = false): HttpClient<P, Q, B> {
     if (replace) {
       this.#query = query;
     } else {
@@ -482,7 +256,7 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setHeaders(headers: Dictionary, replace: boolean = false): HttpClient<P> {
+  setHeaders(headers: Dictionary, replace: boolean = false): HttpClient<P, Q, B> {
     if (replace) {
       this.#headers = headers;
     } else {
@@ -500,25 +274,8 @@ export class HttpClient<
    * @returns
    * This instance.
    */
-  setSignal(signal: AbortSignal): HttpClient<P> {
+  setSignal(signal: AbortSignal): HttpClient<P, Q, B> {
     this.#signal = signal;
-    return this;
-  }
-
-  /**
-   * A function that intercepts the response content, it can alters the
-   * content at HttpClientResponseResult.
-   * 
-   * @param contentInterceptorFn
-   * A function to intercept the response content.
-   * @returns
-   * This instance.
-   */
-  setContentInterceptor(contentInterceptorFn: Function): HttpClient<P> {
-    if (!(contentInterceptorFn instanceof Function)) {
-      throw new TypeError('A function type is expected on setContentInterceptor');
-    }
-    this.#contentInterceptorFn = contentInterceptorFn;
     return this;
   }
 
@@ -534,7 +291,7 @@ export class HttpClient<
    * An URL as an string.
    * @private
    */
-  private _buildUrl<
+  protected _buildUrl<
     QE extends Q,
   >(params: Partial<P> = {}, query: Partial<QE> = {}): string {
     const serviceUrl = this.#serviceUrl || window.location.origin;
@@ -558,15 +315,17 @@ export class HttpClient<
    * @private
    */
   async fetch<
-    QE extends Q,
-    BE extends B,
+    C,
+    PE extends P = P,
+    QE extends Q = Q,
+    BE extends B = B,
   >(method: string, {
     params,
     query = {},
     headers = {},
     body,
     signal,
-  }: HttpClientSettingsWithBody<Partial<P>, QE, BE>): Promise<HttpClientResponseResult<P>> {
+  }: HttpClientSettingsWithBody<Partial<PE>, QE, BE>): Promise<HttpClientResponseAnyResult<C, PE>> {
 
     // Building request settings.
     const allHeaders = createHeaders({ ...this.#headers, ...headers });
@@ -584,15 +343,12 @@ export class HttpClient<
     const response = await fetch(url, requestInit);
 
     // Building response result.
-    const result: HttpClientResponseAnyResult<P> = {
-      ...await parseResponseContent<P>(requestInit, response, this.#endpointFn),
+    const result: HttpClientResponseAnyResult<C, P> = {
+      ...await parseResponseContent<C, P>(requestInit, response, this.#endpointFn),
       endpointFn: this.#endpointFn,
     };
     if (!response.ok) {
       throw new HttpClientResponseError(result);
-    }
-    if (this.#contentInterceptorFn) {
-      return transformResultContent<P>(result, this.#contentInterceptorFn);
     }
     return result;
   }
@@ -606,9 +362,11 @@ export class HttpClient<
    * A response object with the parsed content.
    */
   get<
+    C,
+    PE extends P,
     QE extends Q,
-  >({ params, query, headers, signal }: HttpClientSettings<P, QE> = {}): Promise<HttpClientResponseResult<P>> {
-    return this.fetch('GET', { params, query, headers, signal });
+  >(settings: HttpClientSettings<PE, QE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+    return this.fetch('GET', settings);
   }
 
   /**
@@ -620,10 +378,12 @@ export class HttpClient<
    * A response object with the parsed content.
    */
   post<
+    C,
+    PE extends P,
     QE extends Q,
     BE extends B,
-  >({ params, query, body, headers, signal }: HttpClientSettingsWithBody<P, QE, BE> = {}): Promise<HttpClientResponseResult<P>> {
-    return this.fetch('POST', { params, query, body, headers, signal });
+  >(settings: HttpClientSettingsWithBody<PE, QE, BE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+    return this.fetch('POST', settings);
   }
 
   /**
@@ -635,10 +395,12 @@ export class HttpClient<
    * A response object with the parsed content.
    */
   put<
+    C,
+    PE extends P,
     QE extends Q,
     BE extends B,
-  >({ params, query, body, headers, signal }: HttpClientSettingsWithBody<P, QE, BE> = {} = {}): Promise<HttpClientResponseResult<P>> {
-    return this.fetch('PUT', { params, query, body, headers, signal });
+  >(settings: HttpClientSettingsWithBody<PE, QE, BE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+    return this.fetch('PUT', settings);
   }
 
   /**
@@ -650,9 +412,11 @@ export class HttpClient<
    * A response object with the parsed content.
    */
   del<
+    C,
+    PE extends P,
     QE extends Q,
-  >({ params, query, headers, signal }: HttpClientSettings<P, QE> = {} = {}): Promise<HttpClientResponseResult<P>> {
-    return this.fetch('DELETE', { params, query, headers, signal });
+  >(settings: HttpClientSettings<PE, QE> = {}): Promise<HttpClientResponseAnyResult<C, PE>> {
+    return this.fetch('DELETE', settings);
   }
 }
 
@@ -726,8 +490,9 @@ function isTextContentType(contentType: string | null = ''): boolean {
  * The parsed response.
  */
 async function parseResponseContent<
-  P extends Dictionary,
->(requestInit: RequestInit, response: Response, endpointFn: HttpEndpointFunction<P>): Promise<HttpClientResponseAnyResult<P>> {
+  C = void,
+  P extends Dictionary = {},
+>(requestInit: RequestInit, response: Response, endpointFn: HttpEndpointFunction<P>): Promise<HttpClientResponseAnyResult<C, P>> {
   const status = response.status;
   const mimeType = response.headers.get('content-type') || 'text/plain';
   let type: 'JSON'|'XML'|'TEXT'|'BLOB';

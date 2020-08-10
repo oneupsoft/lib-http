@@ -1,5 +1,5 @@
 import fetchMock from 'jest-fetch-mock';
-import { endpoint, HttpEndpointFunction, HttpClient, Dictionary } from '../src';
+import * as HTTP from '../src';
 
 fetchMock.enableMocks();
 
@@ -13,23 +13,23 @@ xdescribe('HttpClient', () => {
 
     it('should lock the state when it is passed to the reduce sub-method', async () => {
 
-      interface GroupUserParams extends Dictionary {
+      interface GroupUserParams extends HTTP.Dictionary {
         groupId: number;
         userId: number;
       }
 
-      interface GroupUserQuery extends Dictionary {
+      interface GroupUserQuery extends HTTP.Dictionary {
         from: number;
         to: number;
       }
 
       const serviceUrl: string = 'https://www.example.com';
 
-      const endpointFn: HttpEndpointFunction<GroupUserParams> = ({ groupId, userId }) => {
-        return endpoint`/api/group/${groupId}/user/${userId}`;
+      const endpointFn: HTTP.HttpEndpointFunction<GroupUserParams> = ({ groupId, userId }) => {
+        return HTTP.endpoint`/api/group/${groupId}/user/${userId}`;
       }
   
-      const client = new HttpClient<GroupUserParams, GroupUserQuery>({ serviceUrl, endpointFn });
+      const client = new HTTP.HttpClientBase<GroupUserParams, GroupUserQuery>({ serviceUrl, endpointFn });
 
       const result = await client.get({
         params: {
